@@ -11,7 +11,7 @@ update_label() {
     new_value=$2
     if [ "${current_value}" != "${new_value}" ]; then
         echo "setting label ${label_name} from value ${current_value} to ${new_value}"
-        kubectl label pod ${pod_name} "${label_name}"="${new_value}"
+        kubectl label pod ${pod_name} "${label_name}"="${new_value}" --overwrite
     fi
 }
 
