@@ -28,7 +28,7 @@ do
     if { echo > /dev/tcp/localhost/${port_number}; } 2>/dev/null; then
         echo "port ${port_number} is open"
         update_label "${label_value}" "active"
-    else:
+    else
         echo "port ${port_number} is closed"
         update_label "${label_value}" "standby"
     fi
