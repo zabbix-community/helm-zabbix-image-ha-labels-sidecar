@@ -50,9 +50,7 @@ create_manifest:
   - chmod +x manifest-tool
   script:
   - MYDATE=${CI_JOB_STARTED_AT%T*}
-  - VERSION=$(sed -n -e 's/^__version__ *= *"\(.*\)".*/\1/p' ${CI_PROJECT_DIR}/orders.py)
-  - echo "found version ${VERSION}"
   - mkdir ~/.docker
   - echo ${DOCKERCFG_HARBOR} > ~/.docker/config.json
-  - ./manifest-tool --docker-cfg ~/.docker/config.json push from-args --platforms linux/amd64,linux/arm64 --template ${IMAGE_NAME}:${MYDATE}-${CI_PIPELINE_ID}-ARCH --target ${IMAGE_NAME}:${VERSION} --tags latest
+  - ./manifest-tool --docker-cfg ~/.docker/config.json push from-args --platforms linux/amd64,linux/arm64 --template ${IMAGE_NAME}:${MYDATE}-${CI_PIPELINE_ID}-ARCH --target ${IMAGE_NAME}:${MYDATE}-${CI_PIPELINE_ID} --tags latest
   - ./manifest-tool --docker-cfg ~/.docker/config.json inspect ${IMAGE_NAME}:${VERSION}
