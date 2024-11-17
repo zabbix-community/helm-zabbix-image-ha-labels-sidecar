@@ -8,7 +8,7 @@ sleep_time=5
 
 log() {
     msg=$1
-    ts=$(date +%"%Y-%m-%d %h:%m:%s")
+    ts=$(date +"%Y-%m-%d %h:%m:%s")
     echo "${ts} ${msg}"
 }
 
