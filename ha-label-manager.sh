@@ -23,24 +23,36 @@ update_label() {
     fi
 }
 
+get_nr_zabbix_processes() {
+    nr=$(ps axu | grep zabbix_server | grep -v grep | wc -l)
+    if [ -z "${nr}" ]; then
+        nr=0
+    fi
+    return ${nr}
+}
+
+
 while true;
 do
     now=$(date +%s)
     if [[ -z "$last_label_read" || $((now - last_label_read)) -gt 300 ]]; then
         label_value=$(kubectl get pod ${pod_name} -o json | jq -r ".metadata.labels[\"${label_name}\"]")
         last_label_read=${now}
-        log "got label value ${label_value}"
+        log "got label value ${label_value} from Kubernetes API"
     fi
 
+    get_nr_zabbix_processes
+    nr=$?
+
     # check whether listen-port is open
-    if { echo > /dev/tcp/localhost/${port_number}; } 2>/dev/null; then
-        log "port ${port_number} is open"
+    if [ ${nr} -gt 5 ]; then
+        log "there are ${nr} zabbix server processes running (>5), this is the active node"
         update_label "${label_value}" "active"
-	label_value="active"
+        label_value="active"
     else
-        log "port ${port_number} is closed"
+        log "there are ${nr} zabbix server processes running (<=5), this is a standby node"
         update_label "${label_value}" "standby"
-	label_value="standby"
+        label_value="standby"
     fi
     sleep ${sleep_time}
 done
