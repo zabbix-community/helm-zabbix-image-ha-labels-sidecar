@@ -1,0 +1,52 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: ghcr.io/zabbix-community/zabbix-server-ha-label-manager
+
+jobs:
+  set-timestamp:
+    name: Set Global Timestamp
+    runs-on: ubuntu-latest
+    outputs:
+      build-timestamp: ${{ steps.set-timestamp.outputs.BUILD_TIMESTAMP }}
+    steps:
+      - name: Calculate Build Timestamp
+        id: set-timestamp
+        run: |
+          build_timestamp=$(date -u +%Y%m%d%H%M%S)
+          echo "BUILD_TIMESTAMP=$build_timestamp" >> $GITHUB_OUTPUT
+
+  build-and-push:
+    name: Build and Push Multi-Arch Image
+    needs: [set-timestamp]
+    runs-on: ubuntu-latest
+    env:
+      BUILD_TIMESTAMP: ${{ needs.set-timestamp.outputs.build-timestamp }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Multi-Arch Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.BUILD_TIMESTAMP }}
